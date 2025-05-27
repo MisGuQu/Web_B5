@@ -1,0 +1,82 @@
+﻿@model Web_B5.Models.Book
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Sách";
+}
+
+<h1 class="mb-4">Chỉnh sửa Sách</h1>
+
+<form asp-action="Edit" enctype="multipart/form-data" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input type="hidden" asp-for="BookId" />
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label for="imageInput" class="form-label">Ảnh hiện tại</label>
+                <div class="mb-3">
+                    <img id="previewImage" src="@Url.Content(Model.Image ?? "~/images/default-book.jpg")" alt="Ảnh sách" class="img-fluid rounded" style="max-width: 100%; max-height: 250px; object-fit: contain;" />
+                </div>
+                <label asp-for="Image" class="form-label"></label>  Label for file input *
+                <input id="imageInput" type="file" name="ImageFile" class="form-control" accept="image/*" />
+                <span asp-validation-for="Image" class="text-danger"></span>
+                <small class="form-text text-muted">Để trống nếu không muốn thay đổi ảnh</small>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="form-group mb-3">
+                <label asp-for="Title" class="form-label">Tên sách</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Author" class="form-label">Tác giả</label>
+                <input asp-for="Author" class="form-control" />
+                <span asp-validation-for="Author" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Price" class="form-label">Giá</label>
+                <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Description" class="form-label">Mô tả</label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="CategoryId" class="form-label">Thể loại</label>
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
+                    <option value="">-- Chọn thể loại --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" value="Lưu thay đổi" class="btn btn-primary">Lưu thay đổi</button>
+                <a asp-action="Index" class="btn btn-secondary ms-2">Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Script preview hình khi chọn file mới
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const [file] = event.target.files;
+            if (file) {
+                const preview = document.getElementById('previewImage');
+                preview.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
+}

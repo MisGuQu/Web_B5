@@ -1,0 +1,191 @@
+﻿@model IEnumerable<Web_B5.Models.Book>
+
+@{
+    ViewData["Title"] = "Danh Sách Sách";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>@ViewData["Title"] - Web_B5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .sidebar {
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-right: 15px;
+        }
+        .main-content {
+             /* Removed border for cleaner look with cards */
+             /* border: 1px solid #dee2e6; */
+             padding: 15px;
+        }
+        .book-card {
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .book-card img {
+            max-height: 150px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <header class="bg-dark text-white py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/" class="text-white text-decoration-none h5 mb-0">Trang Chủ</a>
+            <div>
+                <a href="#" class="text-white text-decoration-none me-3">Đăng Ký</a>
+                <a href="#" class="text-white text-decoration-none me-3">Đăng nhập</a>
+                <a href="#" class="text-white text-decoration-none">Giỏ hàng</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h5>Chủ đề</h5>
+                    <ul class="list-unstyled">
+                         @if (ViewBag.CategoriesWithCount != null)
+                         {
+                             foreach (var category in ViewBag.CategoriesWithCount)
+                             {
+                                 <li><a href="#">@category.Name (@category.Count)</a></li>
+                             }
+                         }
+                         else
+                         {
+                             <li><a href="#">Cuộc sống (2)</a></li>
+                             <li><a href="#">Lập trình (2)</a></li>
+                             <li><a href="#">Sức Khỏe (0)</a></li>
+                         }
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="main-content">
+                    @Html.AntiForgeryToken()
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                         <h4>Thêm mới</h4> @* Changed from THÔNG TIN CHI TIẾT SÁCH to Thêm mới *@
+                         <a asp-action="Create" class="btn btn-primary btn-sm">Create New</a> @* Kept the Create New button *@
+                    </div>
+
+                    <div class="row">
+                         @foreach (var item in Model)
+                         {
+                             <div class="col-md-4">
+                                 <div class="book-card">
+                                     <div class="d-flex justify-content-between align-items-start">
+                                         <h6 class="mb-0">@Html.DisplayFor(modelItem => item.Title)</h6>
+                                         <a asp-action="Edit" asp-route-id="@item.BookId">Edit</a>
+                                     </div>
+                                     <p class="text-muted">Tác giả: @Html.DisplayFor(modelItem => item.Author)</p>
+                                     <p class="text-muted">Thể loại: @Html.DisplayFor(modelItem => item.Category.CategoryName)</p>
+                                     <div class="text-center mb-3">
+                                         <img src="@Url.Content(item.Image ?? "~/images/default-book.jpg")" alt="Book Image" class="img-fluid rounded" />
+                                     </div>
+                                     <div class="d-flex justify-content-between">
+                                         <a asp-action="DisPlay" asp-route-id="@item.BookId" class="btn btn-secondary btn-sm">Chi tiết</a>
+                                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" data-book-id="@item.BookId" data-book-title="@item.Title">Xóa</button>
+                                     </div>
+                                 </div>
+                             </div>
+                         }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xóa</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bạn có chắc chắn muốn xóa sách <strong id="bookTitleToDelete"></strong> không?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteButton">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="border-top footer text-muted py-3">
+        <div class="container text-center">
+            &copy; 2023 - Lập trình Web
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        var deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        var bookTitleToDelete = document.getElementById('bookTitleToDelete');
+        var confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+        deleteConfirmModal.addEventListener('show.bs.modal', function (event) {
+            // Button that triggered the modal
+            var button = event.relatedTarget;
+            // Extract info from data-bs-* attributes
+            var bookId = button.getAttribute('data-book-id');
+            var bookTitle = button.getAttribute('data-book-title');
+
+            // Update the modal's content.
+            bookTitleToDelete.textContent = bookTitle;
+
+            // Create a form dynamically for the deletion
+            var form = document.createElement('form');
+            form.setAttribute('action', '@Url.Action("Delete", "Book")');
+            form.setAttribute('method', 'post');
+            form.style.display = 'inline';
+
+            var hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'id');
+            hiddenInput.setAttribute('value', bookId);
+
+            var antiForgeryInput = document.querySelector('input[name=__RequestVerificationToken]');
+            if (antiForgeryInput) {
+                form.appendChild(antiForgeryInput.cloneNode());
+            }
+
+            form.appendChild(hiddenInput);
+
+            // When the user clicks the delete button in the modal, submit this form
+            confirmDeleteButton.onclick = function() {
+                 document.body.appendChild(form);
+                 form.submit();
+            };
+        });
+    </script>
+</body>
+</html>
